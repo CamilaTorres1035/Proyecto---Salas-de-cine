@@ -327,9 +327,6 @@ class AppComplejo:
 
     def consultar_funciones_pelicula(self):
         pass
-
-    def realizar_reserva(self):
-        pass
     
     def registrar_sala(self):
         pass
@@ -340,10 +337,13 @@ class AppComplejo:
     def eliminar_funcion(self):
         pass
 
+    def modificar_horario_funcion(self):
+        pass
+    
     def eliminar_funciones_pelicula(self):
         pass
 
-    def modificar_horario_funcion(self):
+    def realizar_reserva(self):
         pass
 
     def consultar_ocupacion(self):
