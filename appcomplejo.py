@@ -320,10 +320,42 @@ class AppComplejo:
         input("No se encontró ningúna película con ese nombre. Presione enter para continuar ...")
     
     def consultar_programacion_general(self):
-        pass
+        """
+        Este método permite consultar la programación completa del complejo, 
+        mostrando las funciones programadas en cada sala.
+        """
+        print("\nPROGRAMACIÓN GENERAL DEL COMPLEJO".center(40, "="))
+
+        if self.cont_salas == 0:
+            print("No hay salas registradas aún.")
+            return
+
+        for i in range(self.cont_salas):
+            self.salas[i].mostrar_programacion()
     
     def consultar_programacion_sala(self):
-        pass
+        """
+        Este método permite consultar la programación de una sala en específico, 
+        mostrando todas las funciones programadas en la sala.
+        """
+        print("\nCONSULTA PROGRAMACIÓN DE SALA".center(40, "="))
+        try:
+            idSala = int(input("Ingrese el ID de la sala que desea consultar: "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar ...")
+            return
+
+        for i in range(self.cont_salas):
+            if self.salas[i].id == idSala:
+                self.salas[i].mostrar_programacion()
+                return
+
+        input(f"No se encontró ninguna sala con ID {idSala}. Presione enter para continuar ...")
+
 
     def consultar_funciones_pelicula(self):
         pass
