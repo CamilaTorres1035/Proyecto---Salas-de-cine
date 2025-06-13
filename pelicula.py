@@ -50,12 +50,12 @@ class Pelicula:
         anio_actual = datetime.now().year
 
         while True:
-            self.nombreEsp = input("Ingrese el nombre de la película en español: ").strip()
+            self.nombreEsp = input("Ingrese el nombre de la película en español: ").strip().title()
             if self.nombreEsp: break
             print("El nombre de la película no puede estar vacío.")
         
         while True:
-            self.nombreOriginal = input("Ingrese el nombre original de la película: ").strip()
+            self.nombreOriginal = input("Ingrese el nombre original de la película: ").strip().title()
             if self.nombreOriginal: break
             print("El nombre de la película no puede estar vacío.")
 

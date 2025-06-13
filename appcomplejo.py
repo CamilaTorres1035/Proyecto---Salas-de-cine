@@ -29,17 +29,17 @@ class AppComplejo:
     """
 
     #atributos
-    nombre = str
-    direccion = str
-    usuario_autenticado = Usuario
-    salas = np.ndarray
-    usuarios = np.ndarray
-    peliculas = np.ndarray
-    reservas = np.ndarray
-    cont_salas = int
-    cont_usuarios = int
-    cont_peliculas = int
-    cont_reservas = int
+    #*nombre = str
+    #*direccion = str
+    #*usuario_autenticado = Usuario
+    #*salas = np.ndarray
+    #*usuarios = np.ndarray
+    #*peliculas = np.ndarray
+    #*reservas = np.ndarray
+    #*cont_salas = int
+    #*cont_usuarios = int
+    #*cont_peliculas = int
+    #*cont_reservas = int
     
     #constantes
     MAX_SALAS = 12
@@ -273,7 +273,7 @@ class AppComplejo:
             
             existe = False
             for i in range(self.cont_peliculas):
-                if self.peliculas[i].nombreEsp.lower() == peli.nombreEsp.lower():
+                if self.peliculas[i].nombreEsp == peli.nombreEsp:
                     existe = True
                     break
             
@@ -290,7 +290,7 @@ class AppComplejo:
         """
         Este método permite al administrador cambiar el estado de una pelicula.
         """
-        nomPeli = input("Ingrese el nombre de la película en español: ").strip()
+        nomPeli = input("Ingrese el nombre de la película en español: ").strip().title()
         try:
             nuevo_estado = int(input("Ingrese el nuevo estado de la película (1: Activo, 0: Inactivo): "))
         except ValueError:
@@ -298,7 +298,7 @@ class AppComplejo:
             return
 
         for i in range(self.cont_peliculas):
-            if self.peliculas[i].nombreEsp.lower() == nomPeli.lower():
+            if self.peliculas[i].nombreEsp == nomPeli:
                 if self.peliculas[i].cambiar_estado(nuevo_estado):
                     print("Estado actualizado.")
                 return
@@ -310,10 +310,10 @@ class AppComplejo:
         Este método permite al usuario consultar el detalle completo de una película registrada.
         """
         print("\nCONSULTAR DETALLE DE PELÍCULA".center(40, "="))
-        nomPeli = input("Ingrese el nombre de la película en español: ").strip()
+        nomPeli = input("Ingrese el nombre de la película en español: ").strip().title()
         
         for i in range(self.cont_peliculas):
-            if self.peliculas[i].nombreEsp.lower() == nomPeli.lower():
+            if self.peliculas[i].nombreEsp == nomPeli:
                 self.peliculas[i].mostrar_detalle()
                 return
         
@@ -327,7 +327,7 @@ class AppComplejo:
         print("\nPROGRAMACIÓN GENERAL DEL COMPLEJO".center(40, "="))
 
         if self.cont_salas == 0:
-            print("No hay salas registradas aún.")
+            input("No hay salas registradas aún. Presione enter para continuar ...")
             return
 
         for i in range(self.cont_salas):
@@ -358,7 +358,33 @@ class AppComplejo:
 
 
     def consultar_funciones_pelicula(self):
-        pass
+        """
+        Este método permite consultar las funciones programadas de una película específica,
+        mostrando en qué salas y horarios se encuentra actualmente programada.
+        """
+        print("\nCONSULTA FUNCIONES DE UNA PELÍCULA".center(40, "="))
+        peli = input("Ingrese el nombre de la película que desea buscar: ").strip().title()
+
+        if self.cont_peliculas == 0:
+            input("No hay películas registradas aún. Presione enter para continuar ...")
+            return
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar ...")
+            return
+
+        encontrada = False
+
+        for i in range(self.cont_salas):
+            for j in range(self.salas[i].cont_programacion):
+                prog = self.salas[i].programacion[j]
+                if prog.pelicula.nombreEsp == peli:
+                    print(f"Sala {self.salas[i].id} - Horario: {prog.horario}")
+                    encontrada = True
+
+        if not encontrada:
+            input("La película no se encuentra programada actualmente. Presione enter para continuar ...")
+
     
     def registrar_sala(self):
         pass
