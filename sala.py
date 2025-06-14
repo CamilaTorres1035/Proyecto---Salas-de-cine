@@ -31,6 +31,14 @@ class Sala:
         self.programacion = np.empty(5, dtype=object)
         self.cont_programacion = 0
 
+    def mostrar_programacion(self):
+        print(f"\nProgramación de la Sala {self.id}:")
+        if self.cont_programacion == 0:
+            print("No hay funciones programadas en esta sala.")
+        else:
+            for i in range(self.cont_programacion):
+                print(f"{i+1}. Película: {self.programacion[i].pelicula.nombreEsp} - Horario: {self.programacion[i].horario}")
+    
     def pedir_datos(self):
         pass
     
@@ -39,6 +47,4 @@ class Sala:
     
     def consultar_recaudo(self):
         pass
-    
-    def mostrar_programacion(self):
-        pass
+
