@@ -426,7 +426,58 @@ class AppComplejo:
             input("Ya no es posible crear más salas. Presione enter para continuar ...")
 
     def agregar_funcion(self):
-        pass
+        """
+        Este método permite registrar una nueva función en una sala y horario específicos.
+        """
+        print("\nPROGRAMAR UNA NUEVA FUNCIÓN".center(40, "="))
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar ...")
+            return
+
+        try:
+            idSala = int(input("Ingrese el ID de la sala en la que desea programar la función: "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        sala_pos = -1
+        for i in range(self.cont_salas):
+            if self.salas[i].id == idSala:
+                sala_pos = i
+                break
+
+        if sala_pos == -1:
+            input(f"No se encontró ninguna sala con ID {idSala}. Presione enter para continuar ...")
+            return
+
+        peli = input("Ingrese el nombre de la película que desea programar: ").strip()
+        horario = input("Ingrese el horario (HH:MM) en el que desea programar: ").strip()
+    
+        # Buscar la película
+        pelicula = None
+        for i in range(self.cont_peliculas):
+            if self.peliculas[i].nombreEsp.lower() == peli.lower():
+                pelicula = self.peliculas[i]
+                break
+
+        if pelicula is None:
+            input("No se encontró ninguna película con ese nombre. Presione enter para continuar ...")
+            return
+
+        # Validar traslape
+        if not self.salas[sala_pos].validar_traslape(horario, pelicula.duracion):
+            input("Ya existe una función programada a esa hora. Presione enter para continuar ...")
+            return
+        
+        # Crear la función y asignarla
+        filas = self.salas[sala_pos].filas
+        asientos = self.salas[sala_pos].asientosFila
+        funcion = Programacion(pelicula, horario, filas, asientos)
+        self.salas[sala_pos].programacion[self.salas[sala_pos].cont_programacion] = funcion
+        self.salas[sala_pos].cont_programacion += 1
+        print("Función agregada con éxito.")
+
 
     def eliminar_funcion(self):
         pass

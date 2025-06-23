@@ -64,8 +64,31 @@ class Sala:
             except ValueError:
                 print("Debe ingresar un número entero válido.")
     
-    def validar_traslape(self):
-        pass
+    def validar_traslape(self, horario, duracion):
+        """
+        Verifica si el nuevo horario se traslapa con alguna función ya programada.
+
+        Parámetros:
+            nuevo_horario (str): Horario propuesto en formato HH:MM.
+            duracion (int): Duración de la nueva película en minutos.
+
+        Retorna:
+            bool: True si NO hay traslape, False si SÍ hay traslape.
+        """
+        h, m = map(int, horario.split(":"))
+        inicio = h * 60 + m
+        fin = inicio + duracion
+        
+        for i in range(self.cont_programacion):
+            prog = self.programacion[i]
+            h, m = map(int, prog.horario.split(":"))
+            inicio_prog = h * 60 + m
+            fin_prog = inicio_prog + prog.pelicula.duracion
+
+            if inicio < fin_prog and fin > inicio_prog:
+                return False
+        
+        return True
     
     def consultar_recaudo(self):
         pass
