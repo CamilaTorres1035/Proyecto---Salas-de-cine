@@ -478,12 +478,92 @@ class AppComplejo:
         self.salas[sala_pos].cont_programacion += 1
         print("Función agregada con éxito.")
 
-
     def eliminar_funcion(self):
-        pass
+        """
+        Este método permite eliminar una funcion que esta programada en un horario de una sala en especifico.
+        """
+        print("\nELIMINAR FUNCIÓN".center(40, "="))
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar ...")
+            return
+
+        try:
+            idSala = int(input("Ingrese el ID de la sala de la que desea eliminar la función: "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        sala_pos = -1
+        for i in range(self.cont_salas):
+            if self.salas[i].id == idSala:
+                sala_pos = i
+                break
+
+        if sala_pos == -1:
+            input(f"No se encontró ninguna sala con ID {idSala}. Presione enter para continuar ...")
+            return
+
+        horario = input("Ingrese el horario (HH:MM) de la función a eliminar: ").strip()
+
+        sala = self.salas[sala_pos]
+        for i in range(sala.cont_programacion):
+            if sala.programacion[i].horario == horario:
+                # Desplazar las funciones siguientes una posición a la izquierda
+                for j in range(i, sala.cont_programacion - 1):
+                    sala.programacion[j] = sala.programacion[j + 1]
+                sala.programacion[sala.cont_programacion - 1] = None  # Limpia la última posición
+                sala.cont_programacion -= 1
+                print("Función eliminada con éxito.")
+                return
+
+        input(f"No se encontró ninguna función en ese horario. Presione enter para continuar ...")
+
 
     def modificar_horario_funcion(self):
-        pass
+        """
+        Este método permite modificar el horario de una función programada en una sala,
+        validando que el nuevo horario no genere traslape con otras funciones en la misma sala.
+        """
+        print("\nMODIFICAR HORARIO DE FUNCIÓN".center(40, "="))
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar ...")
+            return
+
+        try:
+            idSala = int(input("Ingrese el ID de la sala donde desea modificar la función: "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        sala_pos = -1
+        for i in range(self.cont_salas):
+            if self.salas[i].id == idSala:
+                sala_pos = i
+                break
+
+        if sala_pos == -1:
+            input(f"No se encontró ninguna sala con ID {idSala}. Presione enter para continuar ...")
+            return
+
+        horario_actual = input("Ingrese el horario actual (HH:MM) de la función: ").strip()
+
+        sala = self.salas[sala_pos]
+        for i in range(sala.cont_programacion):
+            funcion = sala.programacion[i]
+            if funcion.horario == horario_actual:
+                nuevo_horario = input("Ingrese el nuevo horario (HH:MM) para la función: ").strip()
+                duracion = funcion.pelicula.duracion
+
+                if sala.validar_traslape(nuevo_horario, duracion, excluir=i):
+                    funcion.horario = nuevo_horario
+                    print("Horario modificado con éxito.")
+                else:
+                    input("El nuevo horario genera un traslape con otra función. Presione enter para continuar ...")
+                return
+
+        input("No se encontró ninguna función en ese horario. Presione enter para continuar ...")
     
     def eliminar_funciones_pelicula(self):
         pass
