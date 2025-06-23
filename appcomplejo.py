@@ -59,7 +59,7 @@ class AppComplejo:
 
         #Contadores para los arreglos
         self.cont_salas = 0
-        self.cont_usuarios = 1
+        self.cont_usuarios = 0
         self.cont_peliculas = 0
         self.cont_reservas = 0
         
@@ -109,7 +109,11 @@ class AppComplejo:
             print("2. Registrar pelicula")
             print("3. Modificar estado de película")
             print("4. Cambiar tipo de usuario")
-            print("5. Cerrar sesion")
+            print("5. Registrar Sala")
+            print("6. Consultar programación por sala")
+            print("7. Consultar funciones de una película")
+            print("8. Ver detalle de una película")
+            print("9. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -127,6 +131,14 @@ class AppComplejo:
                 case 4:
                     self.modificar_tipo_usuario()
                 case 5:
+                    self.registrar_sala()
+                case 6:
+                    self.consultar_programacion_sala()
+                case 7:
+                    self.consultar_funciones_pelicula()
+                case 8:
+                    self.ver_detalle_pelicula()
+                case 9:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -141,7 +153,10 @@ class AppComplejo:
         while True:
             print("\nMENÚ VENDEDOR".center(40, "="))
             print("1. Registrar usuario")
-            print("2. Cerrar sesión")
+            print("2. Consultar programación por sala")
+            print("3. Consultar funciones de una película")
+            print("4. Ver detalle de una película")
+            print("5. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -153,6 +168,12 @@ class AppComplejo:
                 case 1:
                     self.registrar_usuario()
                 case 2:
+                    self.consultar_programacion_sala()
+                case 3:
+                    self.consultar_funciones_pelicula()
+                case 4:
+                    self.ver_detalle_pelicula()
+                case 5:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -166,7 +187,8 @@ class AppComplejo:
         while True:
             print("\nMENÚ CLIENTE".center(30, "="))
             print("1. Ver detalle de una película")
-            print("2. Cerrar sesión")
+            print("2. Consultar funciones de una película")
+            print("3. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -178,6 +200,8 @@ class AppComplejo:
                 case 1:
                     self.ver_detalle_pelicula()
                 case 2:
+                    self.consultar_funciones_pelicula()
+                case 3:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -309,11 +333,12 @@ class AppComplejo:
         """
         Este método permite al usuario consultar el detalle completo de una película registrada.
         """
+        print(f"Películas registradas: {[self.peliculas[i].nombreEsp for i in range(self.cont_peliculas)]}")
         print("\nCONSULTAR DETALLE DE PELÍCULA".center(40, "="))
-        nomPeli = input("Ingrese el nombre de la película en español: ").strip().title()
-        
+        nomPeli = input("Ingrese el nombre de la película en español: ").strip()
+
         for i in range(self.cont_peliculas):
-            if self.peliculas[i].nombreEsp == nomPeli:
+            if self.peliculas[i].nombreEsp.lower() == nomPeli.lower():
                 self.peliculas[i].mostrar_detalle()
                 return
         
@@ -384,19 +409,161 @@ class AppComplejo:
 
         if not encontrada:
             input("La película no se encuentra programada actualmente. Presione enter para continuar ...")
-
     
     def registrar_sala(self):
-        pass
+        """
+        Este método permite registrar una nueva sala en el sistema.
+        """
+        print("REGISTRO DE SALAS".center(40, "="))
+
+        if self.cont_salas < len(self.salas):
+            sala = Sala(id=self.cont_salas + 1)
+            sala.pedir_datos()
+            self.salas[self.cont_salas] = sala
+            self.cont_salas += 1
+            print("Sala registrada con éxito.")
+        else:
+            input("Ya no es posible crear más salas. Presione enter para continuar ...")
 
     def agregar_funcion(self):
-        pass
+        """
+        Este método permite registrar una nueva función en una sala y horario específicos.
+        """
+        print("\nPROGRAMAR UNA NUEVA FUNCIÓN".center(40, "="))
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar ...")
+            return
+
+        try:
+            idSala = int(input("Ingrese el ID de la sala en la que desea programar la función: "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        sala_pos = -1
+        for i in range(self.cont_salas):
+            if self.salas[i].id == idSala:
+                sala_pos = i
+                break
+
+        if sala_pos == -1:
+            input(f"No se encontró ninguna sala con ID {idSala}. Presione enter para continuar ...")
+            return
+
+        peli = input("Ingrese el nombre de la película que desea programar: ").strip()
+        horario = input("Ingrese el horario (HH:MM) en el que desea programar: ").strip()
+    
+        # Buscar la película
+        pelicula = None
+        for i in range(self.cont_peliculas):
+            if self.peliculas[i].nombreEsp.lower() == peli.lower():
+                pelicula = self.peliculas[i]
+                break
+
+        if pelicula is None:
+            input("No se encontró ninguna película con ese nombre. Presione enter para continuar ...")
+            return
+
+        # Validar traslape
+        if not self.salas[sala_pos].validar_traslape(horario, pelicula.duracion):
+            input("Ya existe una función programada a esa hora. Presione enter para continuar ...")
+            return
+        
+        # Crear la función y asignarla
+        filas = self.salas[sala_pos].filas
+        asientos = self.salas[sala_pos].asientosFila
+        funcion = Programacion(pelicula, horario, filas, asientos)
+        self.salas[sala_pos].programacion[self.salas[sala_pos].cont_programacion] = funcion
+        self.salas[sala_pos].cont_programacion += 1
+        print("Función agregada con éxito.")
 
     def eliminar_funcion(self):
-        pass
+        """
+        Este método permite eliminar una funcion que esta programada en un horario de una sala en especifico.
+        """
+        print("\nELIMINAR FUNCIÓN".center(40, "="))
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar ...")
+            return
+
+        try:
+            idSala = int(input("Ingrese el ID de la sala de la que desea eliminar la función: "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        sala_pos = -1
+        for i in range(self.cont_salas):
+            if self.salas[i].id == idSala:
+                sala_pos = i
+                break
+
+        if sala_pos == -1:
+            input(f"No se encontró ninguna sala con ID {idSala}. Presione enter para continuar ...")
+            return
+
+        horario = input("Ingrese el horario (HH:MM) de la función a eliminar: ").strip()
+
+        sala = self.salas[sala_pos]
+        for i in range(sala.cont_programacion):
+            if sala.programacion[i].horario == horario:
+                # Desplazar las funciones siguientes una posición a la izquierda
+                for j in range(i, sala.cont_programacion - 1):
+                    sala.programacion[j] = sala.programacion[j + 1]
+                sala.programacion[sala.cont_programacion - 1] = None  # Limpia la última posición
+                sala.cont_programacion -= 1
+                print("Función eliminada con éxito.")
+                return
+
+        input(f"No se encontró ninguna función en ese horario. Presione enter para continuar ...")
+
 
     def modificar_horario_funcion(self):
-        pass
+        """
+        Este método permite modificar el horario de una función programada en una sala,
+        validando que el nuevo horario no genere traslape con otras funciones en la misma sala.
+        """
+        print("\nMODIFICAR HORARIO DE FUNCIÓN".center(40, "="))
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar ...")
+            return
+
+        try:
+            idSala = int(input("Ingrese el ID de la sala donde desea modificar la función: "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        sala_pos = -1
+        for i in range(self.cont_salas):
+            if self.salas[i].id == idSala:
+                sala_pos = i
+                break
+
+        if sala_pos == -1:
+            input(f"No se encontró ninguna sala con ID {idSala}. Presione enter para continuar ...")
+            return
+
+        horario_actual = input("Ingrese el horario actual (HH:MM) de la función: ").strip()
+
+        sala = self.salas[sala_pos]
+        for i in range(sala.cont_programacion):
+            funcion = sala.programacion[i]
+            if funcion.horario == horario_actual:
+                nuevo_horario = input("Ingrese el nuevo horario (HH:MM) para la función: ").strip()
+                duracion = funcion.pelicula.duracion
+
+                if sala.validar_traslape(nuevo_horario, duracion, excluir=i):
+                    funcion.horario = nuevo_horario
+                    print("Horario modificado con éxito.")
+                else:
+                    input("El nuevo horario genera un traslape con otra función. Presione enter para continuar ...")
+                return
+
+        input("No se encontró ninguna función en ese horario. Presione enter para continuar ...")
     
     def eliminar_funciones_pelicula(self):
         pass
@@ -413,7 +580,46 @@ class AppComplejo:
     def consultar_recaudo_total(self):
         pass
     
+    def cargar_datos_prueba(self):
+        """
+        Carga datos de prueba en el sistema para facilitar las pruebas interactivas:
+        usuarios de todos los tipos, una sala básica y una película registrada.
+        """
+
+        # Usuarios
+        self.usuarios[0] = Usuario(nombre="Camila Admin", cedula="1001", contrasena="admin123")
+        self.usuarios[0].cambiar_tipo(Usuario.TIPO_ADMIN)
+
+        self.usuarios[1] = Usuario(nombre="Pedro Vendedor", cedula="1002", contrasena="vend123")
+        self.usuarios[1].cambiar_tipo(Usuario.TIPO_VENDEDOR)
+
+        self.usuarios[2] = Usuario(nombre="Laura Cliente", cedula="1003", contrasena="cli123")
+        # Tipo cliente por defecto
+
+        self.cont_usuarios = 3
+
+        # Película
+        peli = Pelicula(
+            nombreEsp="Titanes del Pacifico",
+            nombreOriginal="Pacific Rim",
+            anioEstreno=2013,
+            duracion=131,
+            genero="Acción",
+            paisOrigen="EE.UU.",
+            calificacion=4.2
+        )
+        self.peliculas[0] = peli
+        self.cont_peliculas = 1
+
+        # Sala
+        sala = Sala(id=1, valorBoleta=15000, filas=5, asientosFila=6)
+        self.salas[0] = sala
+        self.cont_salas = 1
+
+        print("Datos de prueba cargados correctamente.")
+
 
 
 App = AppComplejo()
+App.cargar_datos_prueba()
 App.ejecutar()
