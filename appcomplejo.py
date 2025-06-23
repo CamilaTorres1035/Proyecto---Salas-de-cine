@@ -59,7 +59,7 @@ class AppComplejo:
 
         #Contadores para los arreglos
         self.cont_salas = 0
-        self.cont_usuarios = 1
+        self.cont_usuarios = 0
         self.cont_peliculas = 0
         self.cont_reservas = 0
         
@@ -109,7 +109,11 @@ class AppComplejo:
             print("2. Registrar pelicula")
             print("3. Modificar estado de película")
             print("4. Cambiar tipo de usuario")
-            print("5. Cerrar sesion")
+            print("5. Registrar Sala")
+            print("6. Consultar programación por sala")
+            print("7. Consultar funciones de una película")
+            print("8. Ver detalle de una película")
+            print("9. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -127,6 +131,14 @@ class AppComplejo:
                 case 4:
                     self.modificar_tipo_usuario()
                 case 5:
+                    self.registrar_sala()
+                case 6:
+                    self.consultar_programacion_sala()
+                case 7:
+                    self.consultar_funciones_pelicula()
+                case 8:
+                    self.ver_detalle_pelicula()
+                case 9:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -141,7 +153,10 @@ class AppComplejo:
         while True:
             print("\nMENÚ VENDEDOR".center(40, "="))
             print("1. Registrar usuario")
-            print("2. Cerrar sesión")
+            print("2. Consultar programación por sala")
+            print("3. Consultar funciones de una película")
+            print("4. Ver detalle de una película")
+            print("5. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -153,6 +168,12 @@ class AppComplejo:
                 case 1:
                     self.registrar_usuario()
                 case 2:
+                    self.consultar_programacion_sala()
+                case 3:
+                    self.consultar_funciones_pelicula()
+                case 4:
+                    self.ver_detalle_pelicula()
+                case 5:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -166,7 +187,8 @@ class AppComplejo:
         while True:
             print("\nMENÚ CLIENTE".center(30, "="))
             print("1. Ver detalle de una película")
-            print("2. Cerrar sesión")
+            print("2. Consultar funciones de una película")
+            print("3. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -178,6 +200,8 @@ class AppComplejo:
                 case 1:
                     self.ver_detalle_pelicula()
                 case 2:
+                    self.consultar_funciones_pelicula()
+                case 3:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -309,11 +333,12 @@ class AppComplejo:
         """
         Este método permite al usuario consultar el detalle completo de una película registrada.
         """
+        print(f"Películas registradas: {[self.peliculas[i].nombreEsp for i in range(self.cont_peliculas)]}")
         print("\nCONSULTAR DETALLE DE PELÍCULA".center(40, "="))
-        nomPeli = input("Ingrese el nombre de la película en español: ").strip().title()
-        
+        nomPeli = input("Ingrese el nombre de la película en español: ").strip()
+
         for i in range(self.cont_peliculas):
-            if self.peliculas[i].nombreEsp == nomPeli:
+            if self.peliculas[i].nombreEsp.lower() == nomPeli.lower():
                 self.peliculas[i].mostrar_detalle()
                 return
         
@@ -384,10 +409,21 @@ class AppComplejo:
 
         if not encontrada:
             input("La película no se encuentra programada actualmente. Presione enter para continuar ...")
-
     
     def registrar_sala(self):
-        pass
+        """
+        Este método permite registrar una nueva sala en el sistema.
+        """
+        print("REGISTRO DE SALAS".center(40, "="))
+
+        if self.cont_salas < len(self.salas):
+            sala = Sala(id=self.cont_salas + 1)
+            sala.pedir_datos()
+            self.salas[self.cont_salas] = sala
+            self.cont_salas += 1
+            print("Sala registrada con éxito.")
+        else:
+            input("Ya no es posible crear más salas. Presione enter para continuar ...")
 
     def agregar_funcion(self):
         pass
@@ -413,7 +449,46 @@ class AppComplejo:
     def consultar_recaudo_total(self):
         pass
     
+    def cargar_datos_prueba(self):
+        """
+        Carga datos de prueba en el sistema para facilitar las pruebas interactivas:
+        usuarios de todos los tipos, una sala básica y una película registrada.
+        """
+
+        # Usuarios
+        self.usuarios[0] = Usuario(nombre="Camila Admin", cedula="1001", contrasena="admin123")
+        self.usuarios[0].cambiar_tipo(Usuario.TIPO_ADMIN)
+
+        self.usuarios[1] = Usuario(nombre="Pedro Vendedor", cedula="1002", contrasena="vend123")
+        self.usuarios[1].cambiar_tipo(Usuario.TIPO_VENDEDOR)
+
+        self.usuarios[2] = Usuario(nombre="Laura Cliente", cedula="1003", contrasena="cli123")
+        # Tipo cliente por defecto
+
+        self.cont_usuarios = 3
+
+        # Película
+        peli = Pelicula(
+            nombreEsp="Titanes del Pacifico",
+            nombreOriginal="Pacific Rim",
+            anioEstreno=2013,
+            duracion=131,
+            genero="Acción",
+            paisOrigen="EE.UU.",
+            calificacion=4.2
+        )
+        self.peliculas[0] = peli
+        self.cont_peliculas = 1
+
+        # Sala
+        sala = Sala(id=1, valorBoleta=15000, filas=5, asientosFila=6)
+        self.salas[0] = sala
+        self.cont_salas = 1
+
+        print("Datos de prueba cargados correctamente.")
+
 
 
 App = AppComplejo()
+App.cargar_datos_prueba()
 App.ejecutar()
