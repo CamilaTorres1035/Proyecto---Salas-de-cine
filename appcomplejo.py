@@ -312,7 +312,8 @@ class AppComplejo:
     
     def modificar_estado_pelicula(self):
         """
-        Este método permite al administrador cambiar el estado de una pelicula.
+        Este método permite al administrador cambiar el estado de una película.
+        Si se desactiva, también elimina todas sus funciones programadas en el complejo.
         """
         nomPeli = input("Ingrese el nombre de la película en español: ").strip().title()
         try:
@@ -325,6 +326,9 @@ class AppComplejo:
             if self.peliculas[i].nombreEsp == nomPeli:
                 if self.peliculas[i].cambiar_estado(nuevo_estado):
                     print("Estado actualizado.")
+                    if nuevo_estado == Pelicula.ESTADO_INACTIVO:
+                        self.eliminar_funciones_pelicula(nomPeli)
+                        print("Se eliminaron las funciones programadas de esta película.")
                 return
         
         input("No se encontró ningúna película con ese nombre. Presione enter para continuar ...")
@@ -565,8 +569,24 @@ class AppComplejo:
 
         input("No se encontró ninguna función en ese horario. Presione enter para continuar ...")
     
-    def eliminar_funciones_pelicula(self):
-        pass
+    def eliminar_funciones_pelicula(self, nombre_pelicula):
+        """
+        Elimina todas las funciones de todas las salas que correspondan a la película dada por nombre.
+        """
+        for i in range(self.cont_salas):
+            sala = self.salas[i]
+            j = 0
+            while j < sala.cont_programacion:
+                funcion = sala.programacion[j]
+                if funcion.pelicula.nombreEsp.lower() == nombre_pelicula.lower():
+                    # Eliminar la función desplazando las siguientes
+                    for k in range(j, sala.cont_programacion - 1):
+                        sala.programacion[k] = sala.programacion[k + 1]
+                    sala.programacion[sala.cont_programacion - 1] = None
+                    sala.cont_programacion -= 1
+                    # No incrementes j para revisar el nuevo elemento en j
+                else:
+                    j += 1
 
     def realizar_reserva(self):
         pass
