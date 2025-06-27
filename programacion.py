@@ -28,15 +28,65 @@ class Programacion:
         self.pelicula = pelicula
         self.horario = horario
         self.asientos = np.full((filas, asientoFila), fill_value=self.DISPONIBLE)
-    
-    def consultar_ocupacion(self):
-        pass
-    
+
     def mostrar_disponibilidad(self):
-        pass
+        """
+        Muestra por consola el estado de los asientos de la función.
+        0 = disponible, 1 = reservado.
+        """
+        import string  # Importa el módulo string para obtener letras del alfabeto
+        self.letras = string.ascii_uppercase[:len(self.asientos)]  # Obtiene las primeras letras del alfabeto
+        cad = "  "
+        for i in range(len(self.asientos[0])):
+            cad += str(i+1) +"  "
+        print(cad)
+        for i in range(len(self.asientos)):
+            cad = self.letras[i] + " "
+            for j in range(len(self.asientos[0])):
+                if j > 8:    
+                    cad += str(self.asientos[i][j]) + "   "
+                    continue
+                cad += str(self.asientos[i][j]) + "  "
+            print(cad)
     
-    def verificar_contiguos(self):
-        pass
+    def verificar_contiguos(self, idFila, cantidad):
+        """
+        Verifica si existen 'cantidad' de asientos contiguos disponibles en la fila dada.
+        """
+        fila = self.letras.index(idFila)
+        total_asientos = len(self.asientos[0])
     
-    def reservar_asientos(self):
+        for i in range(total_asientos - cantidad + 1):
+            disponibles = True
+            for j in range(cantidad):
+                if self.asientos[fila][i + j] == self.RESERVADO:
+                    disponibles = False
+                    break
+            if disponibles:
+                return i  # Encontró un bloque contiguo disponible
+    
+        return -1  # No hay asientos contiguos disponibles
+
+    def reservar_asientos(self, idFila, cantidad):
+        idFila = str(idFila).upper()
+        if idFila not in self.letras:
+            input("Esa fila no existe en esta sala. Presione enter para continuar...")
+            return False
+
+        fila = self.letras.index(idFila)
+        asientos = np.full((cantidad), fill_value="", dtype='<U10')
+        
+        inicio = self.verificar_contiguos(idFila, cantidad)
+        
+        if inicio == -1:
+            input("No hay asientos contiguos disponibles en esa fila. Presione enter para continuar...")
+            return False
+        
+        for i in range(cantidad):
+            self.asientos[fila][inicio + i] = self.RESERVADO
+            asientos[i] = f"{idFila}{inicio + i + 1}"
+        
+        return asientos
+
+    def consultar_ocupacion(self):
         pass
