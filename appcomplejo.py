@@ -106,14 +106,18 @@ class AppComplejo:
         while True:
             print("\nMENÚ ADMINISTRADOR".center(40, "="))
             print("1. Registrar usuario")
-            print("2. Registrar pelicula")
+            print("2. Registrar película")
             print("3. Modificar estado de película")
             print("4. Cambiar tipo de usuario")
-            print("5. Registrar Sala")
-            print("6. Consultar programación por sala")
-            print("7. Consultar funciones de una película")
-            print("8. Ver detalle de una película")
-            print("9. Cerrar sesión")
+            print("5. Registrar sala")
+            print("6. Programar función")
+            print("7. Modificar horario de función")
+            print("8. Eliminar función")
+            print("9. Consultar programación por sala")
+            print("10. Consultar funciones de una película")
+            print("11. Ver detalle de una película")
+            print("12. Realizar reserva")
+            print("13. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -133,17 +137,24 @@ class AppComplejo:
                 case 5:
                     self.registrar_sala()
                 case 6:
-                    self.consultar_programacion_sala()
+                    self.agregar_funcion()
                 case 7:
-                    self.consultar_funciones_pelicula()
+                    self.modificar_horario_funcion()
                 case 8:
-                    self.ver_detalle_pelicula()
+                    self.eliminar_funcion()
                 case 9:
+                    self.consultar_programacion_sala()
+                case 10:
+                    self.consultar_funciones_pelicula()
+                case 11:
+                    self.ver_detalle_pelicula()
+                case 12:
+                    self.realizar_reserva()
+                case 13:
                     self.usuario_autenticado = None
                     break
                 case _:
                     print("Opción no válida")
-
 
     def mostrar_menu_vendedor(self):
         """
@@ -156,7 +167,8 @@ class AppComplejo:
             print("2. Consultar programación por sala")
             print("3. Consultar funciones de una película")
             print("4. Ver detalle de una película")
-            print("5. Cerrar sesión")
+            print("5. Realizar reserva")
+            print("6. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -174,6 +186,8 @@ class AppComplejo:
                 case 4:
                     self.ver_detalle_pelicula()
                 case 5:
+                    self.realizar_reserva()
+                case 6:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -185,10 +199,11 @@ class AppComplejo:
         """
         print(f"\nBienvenido, {self.usuario_autenticado.nombre}")
         while True:
-            print("\nMENÚ CLIENTE".center(30, "="))
+            print("\nMENÚ CLIENTE".center(40, "="))
             print("1. Ver detalle de una película")
             print("2. Consultar funciones de una película")
-            print("3. Cerrar sesión")
+            print("3. Realizar reserva")
+            print("4. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -202,6 +217,8 @@ class AppComplejo:
                 case 2:
                     self.consultar_funciones_pelicula()
                 case 3:
+                    self.realizar_reserva()
+                case 4:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -584,12 +601,79 @@ class AppComplejo:
                         sala.programacion[k] = sala.programacion[k + 1]
                     sala.programacion[sala.cont_programacion - 1] = None
                     sala.cont_programacion -= 1
-                    # No incrementes j para revisar el nuevo elemento en j
                 else:
                     j += 1
 
     def realizar_reserva(self):
-        pass
+        """
+        Este método permite realizar la reserva de asientos en una función en una sala especifica.
+        """
+        from datetime import date
+
+        self.consultar_programacion_general()
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas aún. Presione enter para continuar...")
+            return
+
+        try:
+            idSala = int(input("Ingrese el número de la sala en la que desea reservar: "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        if idSala < 1 or idSala > self.cont_salas:
+            input("Sala no válida. Presione enter para continuar...")
+            return
+
+        sala = self.salas[idSala - 1]
+
+        if sala.cont_programacion == 0:
+            input("La sala seleccionada no tiene funciones programadas. Presione enter para continuar...")
+            return
+
+        try:
+            idFuncion = int(input("Ingrese el número de la función que desea reservar (según el orden mostrado): "))
+        except ValueError:
+            print("Debe ingresar un número válido.")
+            return
+
+        if idFuncion < 1 or idFuncion > sala.cont_programacion:
+            input("Función no válida. Presione enter para continuar...")
+            return
+
+        funcion = sala.programacion[idFuncion - 1]
+
+        funcion.mostrar_disponibilidad()
+
+        try:
+            fila = input("Ingrese la fila en la que desea reservar: ").strip().upper()
+            cantidad = int(input("Ingrese la cantidad de asientos que desea reservar: "))
+        except ValueError:
+            print("Debe ingresar una cantidad válida.")
+            return
+
+        asientos = funcion.reservar_asientos(fila, cantidad)
+
+        if type(asientos) == bool:
+            input("No fue posible reservar asientos contiguos en esa fila. Presione enter para continuar...")
+            return
+
+        fechaVenta = date.today().strftime('%d-%m-%Y')
+        peli = funcion.pelicula.nombreEsp
+        horario = funcion.horario
+        total = sala.valorBoleta * cantidad
+        calificacion = funcion.pelicula.calificacion
+
+        res = Reserva(fechaVenta, self.nombre, idSala, peli, horario, total, calificacion)
+
+        for asiento in asientos:
+            res.agregar_silla(asiento)
+
+        self.reservas[self.cont_reservas] = res
+        self.cont_reservas += 1
+
+        res.generar_boleta()
 
     def consultar_ocupacion(self):
         pass
@@ -634,6 +718,8 @@ class AppComplejo:
         # Sala
         sala = Sala(id=1, valorBoleta=15000, filas=5, asientosFila=6)
         self.salas[0] = sala
+        self.salas[0].programacion[0] = Programacion(peli,"11:30", sala.filas, sala.asientosFila)
+        self.salas[0].cont_programacion += 1
         self.cont_salas = 1
 
         print("Datos de prueba cargados correctamente.")

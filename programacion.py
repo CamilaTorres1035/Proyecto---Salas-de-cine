@@ -79,7 +79,6 @@ class Programacion:
         inicio = self.verificar_contiguos(idFila, cantidad)
         
         if inicio == -1:
-            input("No hay asientos contiguos disponibles en esa fila. Presione enter para continuar...")
             return False
         
         for i in range(cantidad):

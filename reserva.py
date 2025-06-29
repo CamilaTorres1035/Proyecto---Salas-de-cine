@@ -37,7 +37,7 @@ class Reserva:
         self.horario = horario
         self.precioTotal = precioTotal
         self.calificacionPelicula = calificacionPelicula
-        self.sillasReservadas = np.empty(22, dtype=object)
+        self.sillasReservadas = np.empty(22, dtype='<U10')
         self.cont_sillas = 0
     
     def agregar_silla(self, silla):
