@@ -117,7 +117,10 @@ class AppComplejo:
             print("10. Consultar funciones de una película")
             print("11. Ver detalle de una película")
             print("12. Realizar reserva")
-            print("13. Cerrar sesión")
+            print("13. Consultar ocupación por función")
+            print("14. Consultar recaudo por sala")
+            print("15. Consultar recaudo total del complejo")
+            print("16. Cerrar sesión")
 
             try:
                 opc = int(input("Seleccione una opción: "))
@@ -151,6 +154,12 @@ class AppComplejo:
                 case 12:
                     self.realizar_reserva()
                 case 13:
+                    self.consultar_ocupacion()
+                case 14:
+                    self.consultar_recaudo_sala()
+                case 15:
+                    self.consultar_recaudo_total()
+                case 16:
                     self.usuario_autenticado = None
                     break
                 case _:
@@ -273,7 +282,7 @@ class AppComplejo:
             if not existe:
                 self.usuarios[self.cont_usuarios] = usr
                 self.cont_usuarios += 1
-                print("Usuario registrado con éxito")
+                input("Usuario registrado con éxito. Presione enter para continuar ...")
             # en caso contrario se indica que ya esta registrado
             else:
                 input("Ya hay un usuario registrado con esa cedula. Presione enter para continuar ...")
@@ -289,7 +298,7 @@ class AppComplejo:
         try:
             nuevo_tipo = int(input("Ingrese el nuevo tipo de usuario (1: Cliente, 2: Vendedor, 3: Administrador): "))
         except ValueError:
-            print("Debe ingresar un número válido.")
+            input("Debe ingresar un número válido. Presione enter para continuar ...")
             return
 
         # se recorre el arreglo de usuarios buscando el que coincida con la cedula ingresada
@@ -297,7 +306,7 @@ class AppComplejo:
             # si se encuentra la cedula se realiza el cambio de tipo desde el usuario
             if self.usuarios[i].cedula == ced:
                 if self.usuarios[i].cambiar_tipo(nuevo_tipo):
-                    print("Tipo de usuario actualizado.")
+                    input("Tipo de usuario actualizado. Presione enter para continuar ...")
                 return
 
         input("No se encontró ningún usuario con esa cédula. Presione enter para continuar ...")
@@ -321,7 +330,7 @@ class AppComplejo:
             if not existe:
                 self.peliculas[self.cont_peliculas] = peli
                 self.cont_peliculas += 1
-                print("Se registro la pelicula con exito")
+                input("Se registro la pelicula con exito. Presione enter para continuar ...")
             else:
                 input("Ya hay una película registrada con este nombre. Presione enter para continuar ...")
         else:
@@ -332,20 +341,20 @@ class AppComplejo:
         Este método permite al administrador cambiar el estado de una película.
         Si se desactiva, también elimina todas sus funciones programadas en el complejo.
         """
-        nomPeli = input("Ingrese el nombre de la película en español: ").strip().title()
+        nomPeli = input("Ingrese el nombre de la película en español: ").strip()
         try:
             nuevo_estado = int(input("Ingrese el nuevo estado de la película (1: Activo, 0: Inactivo): "))
         except ValueError:
-            print("Debe ingresar un número válido.")
+            input("Debe ingresar un número válido. Presione enter para continuar ...")
             return
 
         for i in range(self.cont_peliculas):
-            if self.peliculas[i].nombreEsp == nomPeli:
+            if self.peliculas[i].nombreEsp.lower() == nomPeli.lower():
                 if self.peliculas[i].cambiar_estado(nuevo_estado):
-                    print("Estado actualizado.")
+                    input("Estado actualizado. Presione enter para continuar ...")
                     if nuevo_estado == Pelicula.ESTADO_INACTIVO:
                         self.eliminar_funciones_pelicula(nomPeli)
-                        print("Se eliminaron las funciones programadas de esta película.")
+                        input("Se eliminaron las funciones programadas de esta película. Presione enter para continuar ...")
                 return
         
         input("No se encontró ningúna película con ese nombre. Presione enter para continuar ...")
@@ -354,13 +363,13 @@ class AppComplejo:
         """
         Este método permite al usuario consultar el detalle completo de una película registrada.
         """
-        print(f"Películas registradas: {[self.peliculas[i].nombreEsp for i in range(self.cont_peliculas)]}")
         print("\nCONSULTAR DETALLE DE PELÍCULA".center(40, "="))
         nomPeli = input("Ingrese el nombre de la película en español: ").strip()
 
         for i in range(self.cont_peliculas):
             if self.peliculas[i].nombreEsp.lower() == nomPeli.lower():
                 self.peliculas[i].mostrar_detalle()
+                input("Presione enter para continuar ...")
                 return
         
         input("No se encontró ningúna película con ese nombre. Presione enter para continuar ...")
@@ -378,6 +387,7 @@ class AppComplejo:
 
         for i in range(self.cont_salas):
             self.salas[i].mostrar_programacion()
+        input("Presione enter para continuar ...")
     
     def consultar_programacion_sala(self):
         """
@@ -388,7 +398,7 @@ class AppComplejo:
         try:
             idSala = int(input("Ingrese el ID de la sala que desea consultar: "))
         except ValueError:
-            print("Debe ingresar un número válido.")
+            input("Debe ingresar un número válido. Presione enter para continuar ...")
             return
 
         if self.cont_salas == 0:
@@ -398,6 +408,7 @@ class AppComplejo:
         for i in range(self.cont_salas):
             if self.salas[i].id == idSala:
                 self.salas[i].mostrar_programacion()
+                input("Presione enter para continuar ...")
                 return
 
         input(f"No se encontró ninguna sala con ID {idSala}. Presione enter para continuar ...")
@@ -409,7 +420,7 @@ class AppComplejo:
         mostrando en qué salas y horarios se encuentra actualmente programada.
         """
         print("\nCONSULTA FUNCIONES DE UNA PELÍCULA".center(40, "="))
-        peli = input("Ingrese el nombre de la película que desea buscar: ").strip().title()
+        peli = input("Ingrese el nombre de la película que desea buscar: ").strip()
 
         if self.cont_peliculas == 0:
             input("No hay películas registradas aún. Presione enter para continuar ...")
@@ -424,12 +435,14 @@ class AppComplejo:
         for i in range(self.cont_salas):
             for j in range(self.salas[i].cont_programacion):
                 prog = self.salas[i].programacion[j]
-                if prog.pelicula.nombreEsp == peli:
+                if prog.pelicula.nombreEsp.lower() == peli.lower():
                     print(f"Sala {self.salas[i].id} - Horario: {prog.horario}")
                     encontrada = True
 
         if not encontrada:
             input("La película no se encuentra programada actualmente. Presione enter para continuar ...")
+            return
+        input("Presione enter para continuar ...")
     
     def registrar_sala(self):
         """
@@ -442,7 +455,7 @@ class AppComplejo:
             sala.pedir_datos()
             self.salas[self.cont_salas] = sala
             self.cont_salas += 1
-            print("Sala registrada con éxito.")
+            input("Sala registrada con éxito. Presione enter para continuar ...")
         else:
             input("Ya no es posible crear más salas. Presione enter para continuar ...")
 
@@ -459,7 +472,7 @@ class AppComplejo:
         try:
             idSala = int(input("Ingrese el ID de la sala en la que desea programar la función: "))
         except ValueError:
-            print("Debe ingresar un número válido.")
+            input("Debe ingresar un número válido. Presione enter para continuar ...")
             return
 
         sala_pos = -1
@@ -497,7 +510,7 @@ class AppComplejo:
         funcion = Programacion(pelicula, horario, filas, asientos)
         self.salas[sala_pos].programacion[self.salas[sala_pos].cont_programacion] = funcion
         self.salas[sala_pos].cont_programacion += 1
-        print("Función agregada con éxito.")
+        input("Función agregada con éxito. Presione enter para continuar ...")
 
     def eliminar_funcion(self):
         """
@@ -512,7 +525,7 @@ class AppComplejo:
         try:
             idSala = int(input("Ingrese el ID de la sala de la que desea eliminar la función: "))
         except ValueError:
-            print("Debe ingresar un número válido.")
+            input("Debe ingresar un número válido. Presione enter para continuar ...")
             return
 
         sala_pos = -1
@@ -535,7 +548,7 @@ class AppComplejo:
                     sala.programacion[j] = sala.programacion[j + 1]
                 sala.programacion[sala.cont_programacion - 1] = None  # Limpia la última posición
                 sala.cont_programacion -= 1
-                print("Función eliminada con éxito.")
+                input("Función eliminada con éxito. Presione enter para continuar ...")
                 return
 
         input(f"No se encontró ninguna función en ese horario. Presione enter para continuar ...")
@@ -555,7 +568,7 @@ class AppComplejo:
         try:
             idSala = int(input("Ingrese el ID de la sala donde desea modificar la función: "))
         except ValueError:
-            print("Debe ingresar un número válido.")
+            input("Debe ingresar un número válido. Presione enter para continuar ...")
             return
 
         sala_pos = -1
@@ -579,7 +592,7 @@ class AppComplejo:
 
                 if sala.validar_traslape(nuevo_horario, duracion, excluir=i):
                     funcion.horario = nuevo_horario
-                    print("Horario modificado con éxito.")
+                    input("Horario modificado con éxito. Presione enter para continuar ...")
                 else:
                     input("El nuevo horario genera un traslape con otra función. Presione enter para continuar ...")
                 return
@@ -619,7 +632,7 @@ class AppComplejo:
         try:
             idSala = int(input("Ingrese el número de la sala en la que desea reservar: "))
         except ValueError:
-            print("Debe ingresar un número válido.")
+            input("Debe ingresar un número válido. Presione enter para continuar ...")
             return
 
         if idSala < 1 or idSala > self.cont_salas:
@@ -635,7 +648,7 @@ class AppComplejo:
         try:
             idFuncion = int(input("Ingrese el número de la función que desea reservar (según el orden mostrado): "))
         except ValueError:
-            print("Debe ingresar un número válido.")
+            input("Debe ingresar un número válido. Presione enter para continuar ...")
             return
 
         if idFuncion < 1 or idFuncion > sala.cont_programacion:
@@ -650,7 +663,7 @@ class AppComplejo:
             fila = input("Ingrese la fila en la que desea reservar: ").strip().upper()
             cantidad = int(input("Ingrese la cantidad de asientos que desea reservar: "))
         except ValueError:
-            print("Debe ingresar una cantidad válida.")
+            input("Debe ingresar una cantidad válida. Presione enter para continuar ...")
             return
 
         asientos = funcion.reservar_asientos(fila, cantidad)
@@ -674,15 +687,118 @@ class AppComplejo:
         self.cont_reservas += 1
 
         res.generar_boleta()
+        input("Reserva realizada con exito. Presione enter para continuar ...")
 
     def consultar_ocupacion(self):
-        pass
+        """
+        Muestra todas las funciones de todas las salas ordenadas por porcentaje de ocupación, de mayor a menor.
+        """
+        print("\nOCUPACIÓN DE FUNCIONES POR SALA".center(40, "="))
+
+        if self.cont_salas == 0:
+            input("No hay salas registradas. Presione enter para continuar...")
+            return
+
+        max_funciones = 60  # máximo de funciones que podrían existir (ajustable)
+        salas_ids = np.empty(max_funciones, dtype=int)
+        nombres_pelis = np.empty(max_funciones, dtype=object)
+        horarios = np.empty(max_funciones, dtype=object)
+        ocupaciones = np.empty(max_funciones, dtype=float)
+
+        cont = 0
+        for i in range(self.cont_salas):
+            sala = self.salas[i]
+            for j in range(sala.cont_programacion):
+                funcion = sala.programacion[j]
+                salas_ids[cont] = sala.id
+                nombres_pelis[cont] = funcion.pelicula.nombreEsp
+                horarios[cont] = funcion.horario
+                ocupaciones[cont] = funcion.consultar_ocupacion()
+                cont += 1
+
+        if cont == 0:
+            input("No hay funciones programadas. Presione enter para continuar...")
+            return
+
+        # Ordenamiento por porcentaje de ocupación (burbuja)
+        for i in range(cont - 1):
+            for j in range(i + 1, cont):
+                if ocupaciones[i] < ocupaciones[j]:
+                    ocupaciones[i], ocupaciones[j] = ocupaciones[j], ocupaciones[i]
+                    salas_ids[i], salas_ids[j] = salas_ids[j], salas_ids[i]
+                    nombres_pelis[i], nombres_pelis[j] = nombres_pelis[j], nombres_pelis[i]
+                    horarios[i], horarios[j] = horarios[j], horarios[i]
+
+        print(f"{'Sala':<6}{'Película':<25}{'Horario':<10}{'Ocupación (%)'}")
+        for i in range(cont):
+            print(f"{salas_ids[i]:<6}{nombres_pelis[i]:<25}{horarios[i]:<10}{ocupaciones[i]:.2f}")
+        input("Presione enter para continuar ...")
 
     def consultar_recaudo_sala(self):
-        pass
+        """
+        Consulta el valor total recaudado por una sala en un periodo dado.
+        """
+        from datetime import datetime
+
+        print("\nRECAUDO POR SALA".center(40, "="))
+        try:
+            idSala = int(input("Ingrese el ID de la sala: "))
+            fecha_inicio = datetime.strptime(input("Ingrese la fecha de inicio (AAAA-MM-DD): "), "%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(input("Ingrese la fecha de fin (AAAA-MM-DD): "), "%Y-%m-%d").date()
+        except:
+            input("Error en la entrada. Verifique el formato de la fecha o el ID. Presione enter para continuar ...")
+            return
+
+        sala_valida = any(self.salas[i].id == idSala for i in range(self.cont_salas))
+        if not sala_valida:
+            input("No se encontró la sala indicada. Presione enter para continuar...")
+            return
+
+        total = 0.0
+        for i in range(self.cont_reservas):
+            res = self.reservas[i]
+            try:
+                fecha_reserva = datetime.strptime(res.fechaVenta, "%d-%m-%Y").date()
+                if res.idSala == idSala and fecha_inicio <= fecha_reserva <= fecha_fin:
+                    total += res.precioTotal
+            except:
+                continue
+
+        if total == 0.0:
+            input("No hubo ingresos para esa sala en el periodo indicado. Presione enter para continuar...")
+        else:
+            print(f"Total recaudado por la sala {idSala}: ${total:,.2f}")
+            input("Presione enter para continuar ...")
 
     def consultar_recaudo_total(self):
-        pass
+        """
+        Consulta el valor total recaudado por el complejo en un periodo dado.
+        """
+        from datetime import datetime
+
+        print("\nRECAUDO TOTAL DEL COMPLEJO".center(40, "="))
+        try:
+            fecha_inicio = datetime.strptime(input("Ingrese la fecha de inicio (AAAA-MM-DD): "), "%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(input("Ingrese la fecha de fin (AAAA-MM-DD): "), "%Y-%m-%d").date()
+        except:
+            input("Error en la entrada. Verifique el formato de las fechas. Presione enter para continuar ...")
+            return
+
+        total = 0.0
+        for i in range(self.cont_reservas):
+            res = self.reservas[i]
+            try:
+                fecha_reserva = datetime.strptime(res.fechaVenta, "%d-%m-%Y").date()
+                if fecha_inicio <= fecha_reserva <= fecha_fin:
+                    total += res.precioTotal
+            except:
+                continue
+
+        if total == 0.0:
+            input("No se registraron ingresos en ese periodo. Presione enter para continuar...")
+        else:
+            print(f"Total recaudado por el complejo en ese periodo: ${total:,.2f}")
+            input("Presione enter para continuar ...")
     
     def cargar_datos_prueba(self):
         """

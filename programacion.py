@@ -28,14 +28,15 @@ class Programacion:
         self.pelicula = pelicula
         self.horario = horario
         self.asientos = np.full((filas, asientoFila), fill_value=self.DISPONIBLE)
+        self.cont_ocupacion = 0
+        import string  # Importa el módulo string para obtener letras del alfabeto
+        self.letras = string.ascii_uppercase[:len(self.asientos)]  # Obtiene las primeras letras del alfabeto
 
     def mostrar_disponibilidad(self):
         """
         Muestra por consola el estado de los asientos de la función.
         0 = disponible, 1 = reservado.
         """
-        import string  # Importa el módulo string para obtener letras del alfabeto
-        self.letras = string.ascii_uppercase[:len(self.asientos)]  # Obtiene las primeras letras del alfabeto
         cad = "  "
         for i in range(len(self.asientos[0])):
             cad += str(i+1) +"  "
@@ -48,6 +49,7 @@ class Programacion:
                     continue
                 cad += str(self.asientos[i][j]) + "  "
             print(cad)
+        print("\n0 = Disponible | 1 = Reservado")
     
     def verificar_contiguos(self, idFila, cantidad):
         """
@@ -85,7 +87,11 @@ class Programacion:
             self.asientos[fila][inicio + i] = self.RESERVADO
             asientos[i] = f"{idFila}{inicio + i + 1}"
         
+        self.cont_ocupacion += cantidad
         return asientos
 
     def consultar_ocupacion(self):
-        pass
+        total_asientos = len(self.asientos) * len(self.asientos[0])
+        if total_asientos == 0:
+            return 0.0
+        return (self.cont_ocupacion / total_asientos) * 100

@@ -97,5 +97,21 @@ class Sala:
         return True  # No hay traslapes
     
     def consultar_recaudo(self):
-        pass
+        """
+        Calcula el total de dinero recaudado por la sala, sumando el valor de las boletas
+        vendidas en todas las funciones programadas.
+    
+        Retorna:
+            float: Total de dinero recaudado.
+        """
+        total = 0.0
+        total_asientos = self.filas * self.asientosFila
+    
+        for i in range(self.cont_programacion):
+            prog = self.programacion[i]
+            ocupacion = prog.consultar_ocupacion()  # % ocupación
+            ocupados = (ocupacion / 100) * total_asientos
+            total += ocupados * self.valorBoleta
+    
+        return total
 
