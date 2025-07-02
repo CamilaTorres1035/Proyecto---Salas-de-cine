@@ -37,11 +37,30 @@ class Reserva:
         self.horario = horario
         self.precioTotal = precioTotal
         self.calificacionPelicula = calificacionPelicula
-        self.sillasReservadas = np.empty(22, dtype=object)
+        self.sillasReservadas = np.empty(22, dtype='<U10')
         self.cont_sillas = 0
     
-    def agregar_silla(self, codigo_silla):
-        pass
+    def agregar_silla(self, silla):
+        """
+        Agrega el identificador de una silla a la reserva, si aún hay espacio.
+
+        Parámetros:
+            silla (str): Identificador del asiento (por ejemplo, "B4")
+        """
+        if self.cont_sillas < len(self.sillasReservadas):
+            self.sillasReservadas[self.cont_sillas] = silla
+            self.cont_sillas += 1
 
     def generar_boleta(self):
-        pass
+        """
+        Muestra por consola los datos de la boleta generada a partir de la reserva.
+        """
+        print("\nBOLETA DE RESERVA".center(40, "-"))
+        print(f"Fecha de venta: {self.fechaVenta}")
+        print(f"Complejo: {self.nombreComplejo}")
+        print(f"Sala: {self.idSala}")
+        print(f"Película: {self.nombrePelicula}")
+        print(f"Horario: {self.horario}")
+        print(f"Calificación: {self.calificacionPelicula}")
+        print(f"Asientos reservados: {', '.join(self.sillasReservadas[:self.cont_sillas])}")
+        print(f"Precio total: ${self.precioTotal:.2f}")
