@@ -51,18 +51,21 @@ class AppComplejo:
         self.direccion = "Calle 123 N°345"
         self.usuario_autenticado = None
         
-        #Arreglo fijos de salas, usuarios, películas y reservas 
-        self.salas = np.empty(self.MAX_SALAS, dtype=object)
-        self.usuarios = np.empty(100, dtype=object)
-        self.peliculas = np.empty(100, dtype=object)
-        self.reservas = np.empty(200, dtype=object)
-
-        #Contadores para los arreglos
-        self.cont_salas = 0
-        self.cont_usuarios = 0
-        self.cont_peliculas = 0
-        self.cont_reservas = 0
+        #Arreglo fijos de salas, usuarios, películas y reservas y sus respectivos contadores
+        self.salas, self.cont_salas = self.cargar_datos("salas.npy", 100)
+        self.usuarios, self.cont_usuarios = self.cargar_datos("usuarios.npy", 100)
+        self.peliculas, self.cont_peliculas = self.cargar_datos("peliculas.npy", 100)
+        self.reservas, self.cont_reservas = self.cargar_datos("reservas.npy", 100)
         
+        #Se añade un usuario administrador por defecto en la primera ejecución del sistema
+        if self.cont_usuarios == 0:
+            admin = Usuario(nombre="Admin", cedula="0001", contrasena="admin")
+            admin.cambiar_tipo(Usuario.TIPO_ADMIN)
+            self.usuarios[0] = admin
+            self.cont_usuarios = 1
+            self.guardar_datos(self.usuarios, "usuarios.npy")
+            print("Administrador creado por defecto: Usuario: 0001 - Clave: admin")
+
         
     def ejecutar(self):
         """
@@ -272,20 +275,16 @@ class AppComplejo:
             usr.pedir_datos()
 
             # se recorre el arreglo de usuarios para comprobar si el usuario ya se encuentra registrado
-            existe = False
             for i in range(self.cont_usuarios):
                 if self.usuarios[i].cedula == usr.cedula:
-                    existe = True
-                    break
+                    input("Ya hay un usuario registrado con esa cedula. Presione enter para continuar ...")
+                    return
             
             # si no está registrado se agrega al arreglo de usuario, se actualiza el contador y se muestra un mensaje de exito
-            if not existe:
-                self.usuarios[self.cont_usuarios] = usr
-                self.cont_usuarios += 1
-                input("Usuario registrado con éxito. Presione enter para continuar ...")
-            # en caso contrario se indica que ya esta registrado
-            else:
-                input("Ya hay un usuario registrado con esa cedula. Presione enter para continuar ...")
+            self.usuarios[self.cont_usuarios] = usr
+            self.cont_usuarios += 1
+            self.guardar_datos(self.usuarios, "usuarios.npy")
+            input("Usuario registrado con éxito. Presione enter para continuar ...")
         else:
             input("No es posible registrar más usuarios. Presione enter para continuar ...")
     
@@ -306,6 +305,7 @@ class AppComplejo:
             # si se encuentra la cedula se realiza el cambio de tipo desde el usuario
             if self.usuarios[i].cedula == ced:
                 if self.usuarios[i].cambiar_tipo(nuevo_tipo):
+                    self.guardar_datos(self.usuarios, "usuarios.npy")
                     input("Tipo de usuario actualizado. Presione enter para continuar ...")
                 return
 
@@ -321,18 +321,15 @@ class AppComplejo:
             peli = Pelicula()
             peli.pedir_datos()
             
-            existe = False
             for i in range(self.cont_peliculas):
                 if self.peliculas[i].nombreEsp == peli.nombreEsp:
-                    existe = True
-                    break
+                    input("Ya hay una película registrada con este nombre. Presione enter para continuar ...")
+                    return
             
-            if not existe:
-                self.peliculas[self.cont_peliculas] = peli
-                self.cont_peliculas += 1
-                input("Se registro la pelicula con exito. Presione enter para continuar ...")
-            else:
-                input("Ya hay una película registrada con este nombre. Presione enter para continuar ...")
+            self.peliculas[self.cont_peliculas] = peli
+            self.cont_peliculas += 1
+            self.guardar_datos(self.peliculas, "peliculas.npy")
+            input("Se registro la pelicula con exito. Presione enter para continuar ...")
         else:
             input("No es posible registrar más películas. Presione enter para continuar ...")
     
@@ -351,6 +348,7 @@ class AppComplejo:
         for i in range(self.cont_peliculas):
             if self.peliculas[i].nombreEsp.lower() == nomPeli.lower():
                 if self.peliculas[i].cambiar_estado(nuevo_estado):
+                    self.guardar_datos(self.peliculas, "peliculas.npy")
                     input("Estado actualizado. Presione enter para continuar ...")
                     if nuevo_estado == Pelicula.ESTADO_INACTIVO:
                         self.eliminar_funciones_pelicula(nomPeli)
@@ -455,6 +453,7 @@ class AppComplejo:
             sala.pedir_datos()
             self.salas[self.cont_salas] = sala
             self.cont_salas += 1
+            self.guardar_datos(self.salas, "salas.npy")
             input("Sala registrada con éxito. Presione enter para continuar ...")
         else:
             input("Ya no es posible crear más salas. Presione enter para continuar ...")
@@ -510,6 +509,7 @@ class AppComplejo:
         funcion = Programacion(pelicula, horario, filas, asientos)
         self.salas[sala_pos].programacion[self.salas[sala_pos].cont_programacion] = funcion
         self.salas[sala_pos].cont_programacion += 1
+        self.guardar_datos(self.salas, "salas.npy")
         input("Función agregada con éxito. Presione enter para continuar ...")
 
     def eliminar_funcion(self):
@@ -548,6 +548,7 @@ class AppComplejo:
                     sala.programacion[j] = sala.programacion[j + 1]
                 sala.programacion[sala.cont_programacion - 1] = None  # Limpia la última posición
                 sala.cont_programacion -= 1
+                self.guardar_datos(self.salas, "salas.npy")
                 input("Función eliminada con éxito. Presione enter para continuar ...")
                 return
 
@@ -592,6 +593,7 @@ class AppComplejo:
 
                 if sala.validar_traslape(nuevo_horario, duracion, excluir=i):
                     funcion.horario = nuevo_horario
+                    self.guardar_datos(self.salas, "salas.npy")
                     input("Horario modificado con éxito. Presione enter para continuar ...")
                 else:
                     input("El nuevo horario genera un traslape con otra función. Presione enter para continuar ...")
@@ -614,6 +616,7 @@ class AppComplejo:
                         sala.programacion[k] = sala.programacion[k + 1]
                     sala.programacion[sala.cont_programacion - 1] = None
                     sala.cont_programacion -= 1
+                    self.guardar_datos(self.salas, "salas.npy")
                 else:
                     j += 1
 
@@ -685,6 +688,7 @@ class AppComplejo:
 
         self.reservas[self.cont_reservas] = res
         self.cont_reservas += 1
+        self.guardar_datos(self.reservas, "reservas.npy")
 
         res.generar_boleta()
         input("Reserva realizada con exito. Presione enter para continuar ...")
@@ -800,48 +804,25 @@ class AppComplejo:
             print(f"Total recaudado por el complejo en ese periodo: ${total:,.2f}")
             input("Presione enter para continuar ...")
     
-    def cargar_datos_prueba(self):
-        """
-        Carga datos de prueba en el sistema para facilitar las pruebas interactivas:
-        usuarios de todos los tipos, una sala básica y una película registrada.
-        """
+    def guardar_datos(self, arreglo, ruta_archivo):
+        try:
+            np.save(ruta_archivo, arreglo)
+            return True
+        except Exception as e:
+            print(f"Error guardando en {ruta_archivo}: {e}")
+            return False
 
-        # Usuarios
-        self.usuarios[0] = Usuario(nombre="Camila Admin", cedula="1001", contrasena="admin123")
-        self.usuarios[0].cambiar_tipo(Usuario.TIPO_ADMIN)
-
-        self.usuarios[1] = Usuario(nombre="Pedro Vendedor", cedula="1002", contrasena="vend123")
-        self.usuarios[1].cambiar_tipo(Usuario.TIPO_VENDEDOR)
-
-        self.usuarios[2] = Usuario(nombre="Laura Cliente", cedula="1003", contrasena="cli123")
-        # Tipo cliente por defecto
-
-        self.cont_usuarios = 3
-
-        # Película
-        peli = Pelicula(
-            nombreEsp="Titanes del Pacifico",
-            nombreOriginal="Pacific Rim",
-            anioEstreno=2013,
-            duracion=131,
-            genero="Acción",
-            paisOrigen="EE.UU.",
-            calificacion=4.2
-        )
-        self.peliculas[0] = peli
-        self.cont_peliculas = 1
-
-        # Sala
-        sala = Sala(id=1, valorBoleta=15000, filas=5, asientosFila=6)
-        self.salas[0] = sala
-        self.salas[0].programacion[0] = Programacion(peli,"11:30", sala.filas, sala.asientosFila)
-        self.salas[0].cont_programacion += 1
-        self.cont_salas = 1
-
-        print("Datos de prueba cargados correctamente.")
+    def cargar_datos(self, ruta_archivo, tamano_maximo):
+        try:
+            arreglo = np.load(ruta_archivo, allow_pickle=True)
+            i = 0
+            while i < len(arreglo) and arreglo[i] is not None:
+                i += 1
+            return arreglo, i
+        except:
+            return np.full(tamano_maximo, None, dtype=object), 0
 
 
 
 App = AppComplejo()
-App.cargar_datos_prueba()
 App.ejecutar()
